@@ -34,7 +34,8 @@ jobs:
       run: |
         gem build *.gemspec
         gem install *.gem
-        rspec sample/samplez.rb
+        cd sample
+        rake -f clsana.rk spec
       env:
         OWNER: ${{ github.repository_owner }}
   deploy:
