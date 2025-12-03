@@ -69,20 +69,6 @@ jobs:
         GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
         OWNER: ${{ github.repository_owner }}
 
-    - name: Publish to RubyGems
-      run: |
-        mkdir -p $HOME/.gem
-        touch $HOME/.gem/credentials
-        printf -- "---\n:github: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
-        printf -- ":rubygems_api_key: ${RUBYGEMS_API_KEY}\n" >> $HOME/.gem/credentials
-        chmod 0600 $HOME/.gem/credentials
-        gem build *.gemspec
-        gem push --otp github *.gem
-      env:
-        GEM_HOST_API_KEY: "Bearer ${{secrets.GITHUB_TOKEN}}"
-        RUBYGEMS_API_KEY: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
-
-
 #    - name: Publish to RubyGems
 #      run: |
 #        mkdir -p $HOME/.gem
