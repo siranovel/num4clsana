@@ -33,10 +33,10 @@ end
 
 or from the git repository on github:  
 ~~~
-    git clone https://github.com/siranovel/num4regana.git  
+    git clone https://github.com/siranovel/num4clsana.git  
     cd num4regana  
-    gem build num4regana.gemspec
-    gem install num4regana.gem
+    gem build num4clsana.gemspec
+    gem install num4clsana.gem
 ~~~
 
 ## Contribution ##
