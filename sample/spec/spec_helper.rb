@@ -7,5 +7,7 @@ RSpec.configure do |config|
   config.include MyEigenMatcher
   config.include MyContriMatcher
   config.include MyScoreMatcher
+  config.include MyIsArrMatcher
+  config.include MyContri2Matcher
 end
 
