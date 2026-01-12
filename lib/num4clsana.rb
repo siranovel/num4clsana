@@ -4,6 +4,7 @@ require 'commons-math3-3.6.1.jar'
 
 java_import 'PCA'
 java_import 'Eigen'
+java_import 'SchFactAna'
 
 # 分類分析
 #  (Apache commoms math3使用)
@@ -15,7 +16,7 @@ module Num4ClsAnaLib
         end
         # 固有値・固有ベクトル
         #
-        # @verload eigen(xij)
+        # @overload eigen(xij)
         #   @param [Array] xij xの値(double[][])
         #   @return [Hash] (edval:固有値 edvec:固有ベクトル)
         # @example
@@ -46,9 +47,9 @@ module Num4ClsAnaLib
             end
             return retRb
         end
-        # 累積寄与率・寄与率
+        # 寄与率・累積寄与率
         #
-        # @verload contribution(eds, xij)
+        # @overload contribution(eds, xij)
         #   @param [Array] eds 固有値・固有ベクトル
         #   @param [Array] xij xの値(double[][])
         #   @return [Hash] (edval:固有値 cr:寄与率 cr:累積寄与率)
@@ -92,7 +93,7 @@ module Num4ClsAnaLib
         end
         # 主成分得点
         #
-        # @verload score(eds, xij)
+        # @overload score(eds, xij)
         #   @param [Array] eds 固有値・固有ベクトル
         #   @param [Array] xij xの値(double[][])
         #   @return [Hash] (edval:固有値 score:主成分得点)
@@ -151,6 +152,46 @@ module Num4ClsAnaLib
         end
 
         private :cnvJEigen
+    end
+    # 探索的因子分析
+    class SchFactAnaLib
+        def initialize
+            @fact = SchFactAna.getInstance()
+        end
+        # 因子負荷行列(反復主因子法+プロマックス回転)
+        #
+        # @overload prim_fact_method(xij)
+        #   @param [Array] xij xの値(double[][])
+        #   @return [Array] 因子負荷行列(double[][])
+        def prim_fact_method(xij)
+            retJava = @fact.primFactMethod(xij.to_java(Java::double[]))
+            return retJava.to_a
+        end
+        # 因子負荷行列(最尤法+プロマックス回転)
+        def max_like_method(xij)
+            retJava = @fact.maxLikeMethod(xij.to_java(Java::double[]))
+            return retJava.to_a
+        end
+        # 寄与率・累積寄与率
+        #
+        # @overload contribution(factld)
+        #   @param [Array] factld 因子負荷行列(double[][])
+        #   @return [Hash] (cr:寄与率 cr:累積寄与率)
+        def contribution(factld)
+            retRb = []
+            retJava = @fact.contribution(factld.to_java(Java::double[]))
+            retJava.size.times do |i|
+                retRb.push(
+                  {
+                    "cr": retJava[i].getCr(),
+                    "ccr": retJava[i].getCcr(),
+                  }
+                )
+            end
+            return retRb
+        end
+
+        private :max_like_method
     end
 end
 
