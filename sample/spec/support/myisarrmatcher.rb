@@ -23,10 +23,12 @@ module MyIsArrMatcher
         a = @actual.length
         ret = true
 
-        a.times do |i|
-            w = @actual[i]
-            if @expected[i] != w.round(@n) then
-                ret = false
+        @actual.length.times do |i|
+            @actual[i].length.times do |j|
+                w = @actual[i][j]
+                if @expected[i][j] != w.round(@n) then
+                    ret = false
+                end
             end
         end
         return ret
