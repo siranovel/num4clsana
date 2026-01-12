@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'num4clsana'
 
 RSpec.describe Num4ClsAnaLib do
+    # 主成分分析
     describe Num4ClsAnaLib::PCALib do
         before do
             @xij =[
@@ -65,5 +66,46 @@ RSpec.describe Num4ClsAnaLib do
             ).to is_score(res, 4)
         end
     end
+    # 因子分析
+    describe Num4ClsAnaLib::SchFactAnaLib do
+        before do
+            @xij = [
+                [3,1,2],
+                [4,1,1],
+                [3,4,5],
+                [1,4,4],
+                [2,5,5],
+                [5,2,1],
+                [1,5,4],
+                [4,2,3],
+                [2,3,3],
+                [5,3,2],
+            ]
+        end
+        let(:cls) { Num4ClsAnaLib::SchFactAnaLib.new }
+        it '#prim_fact_method' do
+            res = [
+                [0.7318],
+                [-0.8890],
+                [-0.9560],
+            ]
+            expect(
+                cls.prim_fact_method(@xij)
+            ).to is_rounds(res, 4)
+        end
+        it '#contribution'do
+            factld = [
+                [0.7318598854005292], 
+                [-0.8893333938999854], 
+                [-0.9555079594507963]
+            ]
+            res = [
+              {"cr": 1.0, "ccr": 1.0},
+            ]
+            expect(
+                cls.contribution(factld)
+            ).to is_contri2(res, 4)
+        end
+    end    
 end
 
