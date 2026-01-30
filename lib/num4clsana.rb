@@ -61,13 +61,13 @@ module Num4ClsAnaLib
         #            [19, 7],[24,17],
         #            [21,14],[25,11]
         #         ]
-        #   pca = Num4ClsAnaLib::PCALib.new
         #   ed = [
         #    {edval: 5.571879265934168, 
         #     edvec: [0.8382741666813802, -0.545248953666706]},
         #    {edval: 18.261454067399157, 
         #     edvec: [-0.545248953666706, -0.8382741666813802]}, 
         #   ]
+        #   pca = Num4ClsAnaLib::PCALib.new
         #   pca.contribution(ed, xij)
         #   =>
         #     [{edval: 5.571879265934168, 
@@ -105,13 +105,13 @@ module Num4ClsAnaLib
         #            [19, 7],[24,17],
         #            [21,14],[25,11]
         #         ]
-        #   pca = Num4ClsAnaLib::PCALib.new
         #   ed = [
         #    {edval: 5.571879265934168, 
         #     edvec: [0.8382741666813802, -0.545248953666706]},
         #    {edval: 18.261454067399157, 
         #     edvec: [-0.545248953666706, -0.8382741666813802]}, 
         #   ]
+        #   pca = Num4ClsAnaLib::PCALib.new
         #   pca.score(ed, xij)
         #   =>
         #     [{edval: 5.571879265934168, 
@@ -163,13 +163,21 @@ module Num4ClsAnaLib
         # @overload prim_fact_method(xij)
         #   @param [Array] xij xの値(double[][])
         #   @return [Array] 因子負荷行列(double[][])
+        # @example
+        #    xij = [
+        #      [3,1,2], [4,1,1], [3,4,5],
+        #      [1,4,4], [2,5,5], [5,2,1],
+        #      [1,5,4], [4,2,3], [2,3,3],
+        #      [5,3,2],
+        #    ]
+        #    fact = Num4ClsAnaLib::SchFactAnaLib.new
+        #    fact.prim_fact_method(xij)
+        #    =>
+        #      [
+        #        [0.7317532420269423], [-0.8889664622502997], [-0.9560326157967125]
+        #      ]
         def prim_fact_method(xij)
             retJava = @fact.primFactMethod(xij.to_java(Java::double[]))
-            return retJava.to_a
-        end
-        # 因子負荷行列(最尤法+プロマックス回転)
-        def max_like_method(xij)
-            retJava = @fact.maxLikeMethod(xij.to_java(Java::double[]))
             return retJava.to_a
         end
         # 寄与率・累積寄与率
@@ -177,6 +185,14 @@ module Num4ClsAnaLib
         # @overload contribution(factld)
         #   @param [Array] factld 因子負荷行列(double[][])
         #   @return [Hash] (cr:寄与率 cr:累積寄与率)
+        # @example
+        #     factld = [
+        #       [0.7317532420269423], [-0.8889664622502997], [-0.9560326157967125]
+        #     ]
+        #     fact = Num4ClsAnaLib::SchFactAnaLib.new
+        #     fact.contribution(factld)
+        #     =>
+        #       [{cr: 1.0, ccr: 1.0}]
         def contribution(factld)
             retRb = []
             retJava = @fact.contribution(factld.to_java(Java::double[]))
@@ -190,8 +206,35 @@ module Num4ClsAnaLib
             end
             return retRb
         end
-
-        private :max_like_method
+        # 因子得点
+        #
+        # @overload score(factld, xij)
+        #   @param [Array] factld 因子負荷行列(double[][])
+        #   @param [Array] xij xの値(double[][])
+        #   @return [Array] 因子得点(double[][])
+        # @example
+        #     factld = [
+        #       [0.7317532420269423], [-0.8889664622502997], [-0.9560326157967125]
+        #     ]
+        #     xij = [
+        #       [3,1,2], [4,1,1], [3,4,5],
+        #       [1,4,4], [2,5,5], [5,2,1],
+        #       [1,5,4], [4,2,3], [2,3,3],
+        #       [5,3,2],
+        #     ]
+        #     fact = Num4ClsAnaLib::SchFactAnaLib.new
+        #     fact.score(factld, xij)
+        #     =>
+        #       [
+        #         [-1.3148004955949735], [-0.5481070786747271], [-4.098780221903178],
+        #         [-3.617001427553938], [-4.450023128799671], [-0.7094069038572157],
+        #         [-3.873272793593429], [-2.1478221968407065], [-2.594036644594201],
+        #         [-1.6374001459599508]
+        #       ]
+        def score(factld, xij)
+            retJava = @fact.score(factld.to_java(Java::double[]),xij.to_java(Java::double[]))
+            return retJava.to_a
+        end
     end
 end
 
