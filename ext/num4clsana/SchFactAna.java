@@ -16,15 +16,15 @@ public class SchFactAna {
 
         return fact_0.factLoading();
     }
-    public double[][] maxLikeMethod(double[][] xij) {
-        FactAna_0 fact_0 = new MaxLikeMethod(xij);
-
-        return fact_0.factLoading();
-    }
     public Contribution2[] contribution(double[][] factlds) {
         FactAna_1 fact_1 = new FactAna_1(factlds);
 
         return fact_1.contribution();
+    }
+    public double[][] score(double[][] factlds,double[][] xij) {
+        FactAna_1 fact_1 = new FactAna_1(factlds);
+
+        return fact_1.score(xij);
     }
     /*********************************/
     /* interface define              */
@@ -49,8 +49,8 @@ public class SchFactAna {
         private int rowN = 0;
         private int colN = 0;
         abstract double[][] factExtract(double[][] corr);
-        public FactAna_0(RealMatrix matrixAT) {
-            this.matrixAT = matrixAT;
+        public FactAna_0(double[][] xij) {
+            this.matrixAT = MatrixUtils.createRealMatrix(xij).transpose();
             this.rowN = matrixAT.getRow(0).length;
             this.colN = matrixAT.getColumn(0).length;
         }
@@ -72,15 +72,15 @@ public class SchFactAna {
         }
 
         // 相関行列作成
-        private RealMatrix calcCorrMatrix(RealMatrix matrixWT) {
-            int colR = matrixWT.getColumn(0).length;
+        private RealMatrix calcCorrMatrix(RealMatrix matrixAT) {
+            int colR = matrixAT.getColumn(0).length;
             PearsonsCorrelation corel = new PearsonsCorrelation();
             double[][] matrix = new double[colR][colR];
             
             for(int i = 0; i < colR; i++) {
                 for(int j = 0; j < colR; j++) {
-                    double[] xArray = matrixWT.getRow(i);
-                    double[] yArray = matrixWT.getRow(j);
+                    double[] xArray = matrixAT.getRow(i);
+                    double[] yArray = matrixAT.getRow(j);
 
                     matrix[i][j] = corel.correlation(xArray, yArray);
                 }
@@ -90,14 +90,16 @@ public class SchFactAna {
     }
 
     private class FactAna_1 {
-        private RealMatrix matrixAT = null;      // 元データ
+        private RealMatrix matrixF = null;      // 元データ
+        private RealMatrix matrixFT = null;      // 元データ
         private int rowN = 0;
         private int colN = 0;
         private double sum = 0.0;
-        public FactAna_1(double[][] xij) {
-            this.matrixAT = MatrixUtils.createRealMatrix(xij).transpose();
-            this.rowN = matrixAT.getRow(0).length;
-            this.colN = matrixAT.getColumn(0).length;
+        public FactAna_1(double[][] factlds) {
+            this.matrixF = MatrixUtils.createRealMatrix(factlds);
+            this.matrixFT = MatrixUtils.createRealMatrix(factlds).transpose();
+            this.rowN = matrixFT.getRow(0).length;
+            this.colN = matrixFT.getColumn(0).length;
         }
         // 寄与率・累積寄与率
         public Contribution2[] contribution() {
@@ -117,7 +119,7 @@ public class SchFactAna {
             double[] lamba = new double[colN];
 
             for(int i = 0; i < colN; i++) {
-                double[] factld = matrixAT.getRow(i);
+                double[] factld = matrixFT.getRow(i);
                 double s = 0.0;
 
                 for(int j = 0; j < factld.length; j++) {
@@ -128,12 +130,39 @@ public class SchFactAna {
             }
             return lamba;
         }
+        // 因子得点
+        public double[][] score(double[][] xij) {
+            RealMatrix matrixA = MatrixUtils.createRealMatrix(xij);
+            // 相関行列の逆行列
+            RealMatrix matrixRi = MatrixUtils.blockInverse(calcCorrMatrix(xij), 0);
+            // 相関行列の逆行列×因子負荷行列
+            RealMatrix matrixRif = matrixRi.multiply(matrixF);
+
+            return matrixA.multiply(matrixRif).getData();
+        }
+        // 相関行列作成
+        private RealMatrix calcCorrMatrix(double[][] xij) {
+            RealMatrix matrixAT = MatrixUtils.createRealMatrix(xij).transpose();
+            int colR = matrixAT.getColumn(0).length;
+            PearsonsCorrelation corel = new PearsonsCorrelation();
+            double[][] matrix = new double[colR][colR];
+
+            for(int i = 0; i < colR; i++) {
+                for(int j = 0; j < colR; j++) {
+                    double[] xArray = matrixAT.getRow(i);
+                    double[] yArray = matrixAT.getRow(j);
+
+                    matrix[i][j] = corel.correlation(xArray, yArray);
+                }
+            }
+            return MatrixUtils.createRealMatrix(matrix);
+        }
     }
     // 主因子法
     private class PrimFactMethod extends FactAna_0 {
         int colN = 0;
         public PrimFactMethod(double[][] xij) {
-            super(MatrixUtils.createRealMatrix(xij).transpose());
+            super(xij);
         }
         // 因子抽出
         double[][] factExtract(double[][] corr) {
@@ -205,34 +234,6 @@ public class SchFactAna {
                 }
             }
             arrEds.sort(Comparator.comparing(Eigen::getEdVal).reversed());
-            return arrEds.toArray(new Eigen[arrEds.size()]);
-        }
-    }
-    // 最尤法
-    private class MaxLikeMethod extends FactAna_0 {
-        private double[][] xij = null;
-        public MaxLikeMethod(double[][] xij) {
-            super(MatrixUtils.createRealMatrix(xij));
-            this.xij = xij;
-        }
-        // 因子抽出
-        double[][] factExtract(double[][] corr) {
-            Eigen[] eds = eigen(corr);
-            return corr;
-        }
-        // 固有値・固有ベクトル
-        private Eigen[] eigen(double[][] corr) {
-            List<Eigen> arrEds = new ArrayList<Eigen>();
-            // 固有値計算
-            RealMatrix matrixB = MatrixUtils.createRealMatrix(corr);
-            EigenDecomposition ed = new EigenDecomposition(matrixB);
-            double[] eigens = ed.getRealEigenvalues();
-            // 固有値を求め、それの固有ベクトルを求める
-            for(int i = 0; i < eigens.length; i++) {
-                double[] evs = ed.getEigenvector(i).toArray();
-
-                    arrEds.add(new Eigen(eigens[i], evs));
-            }
             return arrEds.toArray(new Eigen[arrEds.size()]);
         }
     }
