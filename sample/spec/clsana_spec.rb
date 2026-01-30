@@ -95,9 +95,9 @@ RSpec.describe Num4ClsAnaLib do
         end
         it '#contribution'do
             factld = [
-                [0.7318598854005292], 
-                [-0.8893333938999854], 
-                [-0.9555079594507963]
+                [0.7317532420269423], 
+                [-0.8889664622502997], 
+                [-0.9560326157967125]
             ]
             res = [
               {"cr": 1.0, "ccr": 1.0},
@@ -105,6 +105,22 @@ RSpec.describe Num4ClsAnaLib do
             expect(
                 cls.contribution(factld)
             ).to is_contri2(res, 4)
+        end
+        it '#score' do
+            factld = [
+                [0.7317532420269423], 
+                [-0.8889664622502997], 
+                [-0.9560326157967125]
+            ]
+            res = [
+                [-1.3148],[-0.5481],[-4.0988],
+                [-3.6170],[-4.4500],[-0.7094],
+                [-3.8733],[-2.1478],[-2.5940],
+                [-1.6374]
+            ]
+            expect(
+                cls.score(factld, @xij)
+            ).to is_rounds(res, 4)
         end
     end    
 end
