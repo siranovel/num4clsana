@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name          = 'num4clsana'
-  s.version       = '0.0.3'
-  s.date          = '2026-01-29'
+  s.version       = '0.0.4'
+  s.date          = '2026-02-10'
   s.summary       = "num for classification analysis"
   s.description   = "numerical solution for classification analysis."
   s.authors       = ["siranovel"]

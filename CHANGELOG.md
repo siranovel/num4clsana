@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [0.0.4] - 2026-02-10
+### add
+- add DiscAnalib
+
 ## [0.0.3] - 2026-01-29
 ### add
 - add score in SchFactAnaLib
