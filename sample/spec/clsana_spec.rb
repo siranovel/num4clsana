@@ -91,7 +91,7 @@ RSpec.describe Num4ClsAnaLib do
             ]
             expect(
                 cls.prim_fact_method(@xij)
-            ).to is_rounds(res, 4)
+            ).to is_rounds2(res, 4)
         end
         it '#contribution'do
             factld = [
@@ -120,8 +120,49 @@ RSpec.describe Num4ClsAnaLib do
             ]
             expect(
                 cls.score(factld, @xij)
-            ).to is_rounds(res, 4)
+            ).to is_rounds2(res, 4)
         end
     end    
+    # 判別分析
+    describe Num4ClsAnaLib::DiscAnalib do
+        before do
+            @xa = [
+                [3.4, 2.9],
+                [3.9, 2.4],
+                [2.2, 3.8],
+                [3.5, 4.8],
+                [4.1, 3.2],
+                [3.7, 4.1],
+                [2.8, 4.2]
+            ]
+            @xb = [
+                [1.4, 3.5],
+                [2.4, 2.6],
+                [2.8, 2.3],
+                [1.7, 2.6],
+                [2.3, 1.6],
+                [1.9, 2.1],
+                [2.7, 3.5],
+                [1.3, 1.9]
+            ]
+        end
+        let(:cls) { Num4ClsAnaLib::DiscAnalib.new }
+        it '#line_disc' do
+            res = [-7.327, 1.606, 1.0]
+            expect(
+                cls.line_disc(@xa, @xb)
+            ).to is_rounds(res,3)
+        end
+        it '#score' do
+            an = [-7.327, 1.606, 1.0]
+            res = {
+              "G1": [1.033, 1.336, 0.006, 3.094, 2.458, 2.715, 1.370],
+              "G2": [-1.579,-0.873,-0.530,-1.997,-2.033,-2.176,0.509,-3.339]
+            }
+            expect(
+                cls.score(an, @xa, @xb)
+            ).to is_score2(res,3)
+        end
+    end
 end
 
