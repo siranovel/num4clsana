@@ -30,8 +30,39 @@ module MyScoreMatcher
       "#{@expected} expected but got #{@actual}"
     end
   end
+  class Matcher2
+    def initialize(expected, n)
+      @expected = expected
+      @n = n
+    end
+    def matches?(actual)
+        ret = true
+        @actual = actual
+        act_g1 = actual[:G1]
+        act_g2 = actual[:G2]
+        # グループ1
+        act_g1.size.times{|i|
+            if act_g1[i].round(@n) != @expected[:G1][i] then
+                ret = false
+            end
+        }
+        # グループ2
+        act_g2.size.times{|i|
+            if act_g2[i].round(@n) != @expected[:G2][i] then
+                ret = false
+            end
+        }
+        return ret
+    end
+    def failure_message
+      "#{@expected} expected but got #{@actual}"
+    end
+  end
   def is_score(expected, n)
     Matcher.new(expected, n)
+  end
+  def is_score2(expected, n)
+    Matcher2.new(expected, n)
   end
 end
 
