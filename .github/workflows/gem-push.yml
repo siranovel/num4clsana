@@ -72,7 +72,6 @@ jobs:
       with:
         setup-trusted-publisher: false
 
-
 #    - name: Publish to RubyGems
 #      run: |
 #        mkdir -p $HOME/.gem
