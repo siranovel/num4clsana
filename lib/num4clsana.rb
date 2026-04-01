@@ -242,43 +242,14 @@ module Num4ClsAnaLib
         def initialize
             @disc = DiscAna.getInstance()
         end
-        # 線形型判別
+        # 判別得点(線形型判別関数による)
         #
-        # @overload line_disc(xa, xb)
-        #   @param [Array] xa グループ1(double[][])
-        #   @param [Array] xb グループ2(double[][])
-        #   @return [Array] 判別係数(double[])
-        # @example
-        #     xa = [
-        #         [3.4, 2.9], [3.9, 2.4],
-        #         [2.2, 3.8], [3.5, 4.8],
-        #         [4.1, 3.2], [3.7, 4.1],
-        #         [2.8, 4.2]
-        #     ]
-        #     xb = [
-        #         [1.4, 3.5], [2.4, 2.6],
-        #         [2.8, 2.3], [1.7, 2.6],
-        #         [2.3, 1.6], [1.9, 2.1],
-        #         [2.7, 3.5], [1.3, 1.9]
-        #     ]
-        #     cls = Num4ClsAnaLib::DiscAnalib.new
-        #     cls.line_disc(xa, xb)
-        #     =>
-        #       [-7.327413662198208, 1.6062644621689057, 1.0]
-        def line_disc(xa, xb)
-            retJava = @disc.line_disc(xa.to_java(Java::double[]), xb.to_java(Java::double[]))
-            return retJava.to_a
-        end
-        # 判別得点
-        #
-        # @overload score(an, xa, xb)
-        #   @param [Array] an 判別係数(double[])
+        # @overload score(xa, xb)
         #   @param [Array] xa グループ1(double[][])
         #   @param [Array] xb グループ2(double[][])
         #   @return [Hash] (G1: グループ1(double[])
         #                   G2: グループ2(double[]))
         # @example
-        #     an = [-7.327, 1.606, 1.0]
         #     xa = [
         #         [3.4, 2.9], [3.9, 2.4],
         #         [2.2, 3.8], [3.5, 4.8],
@@ -292,20 +263,54 @@ module Num4ClsAnaLib
         #         [2.7, 3.5], [1.3, 1.9]
         #     ]
         #     cls = Num4ClsAnaLib::DiscAnalib.new
-        #     cls.score(an, xa, xb)
+        #     cls.score(xa, xb)
         #     =>
         #       res = {
-        #         "G1": [1.033, 1.336, 0.006, 3.094, 2.458, 2.715, 1.370],
-        #         "G2": [-1.579,-0.873,-0.530,-1.997,-2.033,-2.176,0.509,-3.339]
+        #         "G1": [1.034, 1.337, 0.006, 3.095, 2.458, 2.716, 1.370],
+        #         "G2": [-1.579,-0.872,-0.530,-1.997,-2.033,-2.176,0.510,-3.339]
         #       }
-        def score(an, xa, xb)
-            retJa1 = @disc.score(an.to_java(Java::double), xa.to_java(Java::double[]))
-            retJa2 = @disc.score(an.to_java(Java::double), xb.to_java(Java::double[]))
+        def score(xa, xb)
+            retJava = @disc.score(xa.to_java(Java::double[]),xb.to_java(Java::double[]))
             retRb = {
-                "G1": retJa1.to_a,
-                "G2": retJa2.to_a
+                "G1": retJava.get("G1").to_a,
+                "G2": retJava.get("G2").to_a,
             }
-            return retRb
+            return retRb 
+        end
+        # 判別得点(マハラノビスの距離による)
+        #
+        # @overload score2(xa, xb)
+        #   @param [Array] xa グループ1(double[][])
+        #   @param [Array] xb グループ2(double[][])
+        #   @return [Hash] (G1: グループ1(double[])
+        #                   G2: グループ2(double[]))
+        # @example
+        #     xa = [
+        #         [3.4, 2.9], [3.9, 2.4],
+        #         [2.2, 3.8], [3.5, 4.8],
+        #         [4.1, 3.2], [3.7, 4.1],
+        #         [2.8, 4.2]
+        #     ]
+        #     xb = [
+        #         [1.4, 3.5], [2.4, 2.6],
+        #         [2.8, 2.3], [1.7, 2.6],
+        #         [2.3, 1.6], [1.9, 2.1],
+        #         [2.7, 3.5], [1.3, 1.9]
+        #     ]
+        #     cls = Num4ClsAnaLib::DiscAnalib.new
+        #     cls.score2(xa, xb)
+        #     =>
+        #       res = {
+        #         "G1": [1.454, 1.722, 0.028, 2.448, 2.542, 2.633, 1.743],
+        #         "G2": [-1.382,-1.799,-0.882,-2.767,-2.226,-2.954,0.605,-3.089]
+        #       }
+        def score2(xa, xb)
+            retJava = @disc.score2(xa.to_java(Java::double[]),xb.to_java(Java::double[]))
+            retRb = {
+                "G1": retJava.get("G1").to_a,
+                "G2": retJava.get("G2").to_a,
+            }
+            return retRb 
         end
     end
 end
