@@ -147,20 +147,22 @@ RSpec.describe Num4ClsAnaLib do
             ]
         end
         let(:cls) { Num4ClsAnaLib::DiscAnalib.new }
-        it '#line_disc' do
-            res = [-7.327, 1.606, 1.0]
-            expect(
-                cls.line_disc(@xa, @xb)
-            ).to is_rounds(res,3)
-        end
         it '#score' do
-            an = [-7.327, 1.606, 1.0]
             res = {
-              "G1": [1.033, 1.336, 0.006, 3.094, 2.458, 2.715, 1.370],
-              "G2": [-1.579,-0.873,-0.530,-1.997,-2.033,-2.176,0.509,-3.339]
+              "G1": [1.034, 1.337, 0.006, 3.095, 2.458, 2.716, 1.370],
+              "G2": [-1.579,-0.872,-0.530,-1.997,-2.033,-2.176,0.510,-3.339]
             }
             expect(
-                cls.score(an, @xa, @xb)
+                cls.score(@xa, @xb)
+            ).to is_score2(res,3)
+        end
+        it '#score2' do
+            res = {
+              "G1": [1.454, 1.722, 0.028, 2.448, 2.542, 2.633, 1.743],
+              "G2": [-1.382,-1.799,-0.882,-2.767,-2.226,-2.954,0.605,-3.089]
+            }
+            expect(
+                cls.score2(@xa, @xb)
             ).to is_score2(res,3)
         end
     end
