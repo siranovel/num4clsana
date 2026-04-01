@@ -1,20 +1,23 @@
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.StatUtils;
 
+import java.util.Map;
+import java.util.HashMap;
 public class DiscAna {
     private static DiscAna da = new DiscAna();
     public static DiscAna getInstance() { return da;}
-    public double[] line_disc(double[][] xa, double[][] xb){
-        DiscAna_0 da0 = new DiscAna_0();
+    public Map<String, double[]> score(double[][] xa, double[][] xb){
+        LineDisc da0 = new LineDisc();
 
-        return da0.line_disc(xa, xb);
+        return da0.score(xa, xb);
     }
-    public double[] score(double[] an, double[][] gx){
-        DiscAna_0 da0 = new DiscAna_0();
+    public Map<String, double[]> score2(double[][] xa, double[][] xb) {
+        Mahalanobis da1 = new Mahalanobis();
 
-        return da0.score(an, gx);
+        return da1.score(xa, xb);
     }
     /*********************************/
     /* interface define              */
@@ -22,16 +25,26 @@ public class DiscAna {
     /*********************************/
     /* class define                  */
     /*********************************/
-    private class DiscAna_0 {
+    // 線形型判別分析
+    private class LineDisc {
         private int n1 = 0;
         private int n2 = 0;
-        // 線形型判別
-        public double[] line_disc(double[][] xa, double[][] xb){
+        // 判別得点
+        public Map<String, double[]> score(double[][] xa, double[][] xb) {
+            Map<String, double[]> retMap = new HashMap<String, double[]>();
+            double[] an = line_disc(xa, xb);  
+
+            retMap.put("G1", calcScore(an, xa));
+            retMap.put("G2", calcScore(an, xb));
+            return retMap;
+        }
+        // 線形型判別関数の係数
+        private double[] line_disc(double[][] xa, double[][] xb){
             // 各グループの個数
             RealMatrix matrixXa = MatrixUtils.createRealMatrix(xa);
-            n1 = matrixXa.getColumn(0).length;
+            n1 = xa.length;
             RealMatrix matrixXb = MatrixUtils.createRealMatrix(xb);
-            n2 = matrixXb.getColumn(0).length;
+            n2 = xb.length;
 
             // 各グループの平均を計算
             double[] meanG1 = calcMean(matrixXa);
@@ -55,6 +68,7 @@ public class DiscAna {
 
             return bn;
         }
+        // 平均を計算
         private double[] calcMean(RealMatrix matrixX) {
             double[] m = new double[2];
 
@@ -65,6 +79,7 @@ public class DiscAna {
             }
             return m;
         }
+        // 分散共分散行列を計算
         private double[][] calcCorrMatrix(RealMatrix matrixX) {
             Covariance corel = new Covariance();
             double[][] corr = new double[2][2];
@@ -106,7 +121,7 @@ public class DiscAna {
             return -1 * ret;
         }
         // 判別得点
-        public double[] score(double[] an, double[][] gx) {
+        private double[] calcScore(double[] an, double[][] gx) {
             double[] ret = new double[gx.length];
 
             for(int i = 0; i < ret.length; i++) {
@@ -115,6 +130,89 @@ public class DiscAna {
                        + an[2] * gx[i][1];
             }
             return ret;
+        }
+    }
+    // マハラノビスの距離
+    private class Mahalanobis {
+        // 判別得点
+        public Map<String, double[]> score(double[][] xa, double[][] xb) {
+            Map<String, double[]> retMap = new HashMap<String, double[]>();
+            RealMatrix matrixXa = MatrixUtils.createRealMatrix(xa);
+            RealMatrix matrixXb = MatrixUtils.createRealMatrix(xb);
+            // 各グループの平均を計算
+            double[] meanG1 = calcMean(matrixXa);
+            double[] meanG2 = calcMean(matrixXb);
+            // 各グループの分散共分散行列を求め、逆行列を計算
+            RealMatrix invV1 = MatrixUtils.inverse(calcCorrMatrix(matrixXa));
+            RealMatrix invV2 = MatrixUtils.inverse(calcCorrMatrix(matrixXb));
+
+            // 判別得点を計算
+            retMap.put("G1", 
+                calcScore(
+                    xa,
+                    meanG1, meanG2,
+                    invV1, invV2)
+            );
+            retMap.put("G2", 
+                calcScore(
+                    xb,
+                    meanG1, meanG2,
+                    invV1, invV2)
+            );
+            return retMap;
+        }
+        // 平均を計算
+        private double[] calcMean(RealMatrix matrixX) {
+            double[] m = new double[2];
+
+            for(int i = 0; i < 2; i++) {
+                double[] dt = matrixX.getColumn(i);
+
+                m[i] = StatUtils.mean(dt);
+            }
+            return m;
+        }
+        // 分散共分散行列を計算
+        private RealMatrix calcCorrMatrix(RealMatrix matrixX) {
+            Covariance corel = new Covariance();
+            double[][] corr = new double[2][2];
+
+            for(int i =0; i < 2; i++) {
+                for(int j = 0; j < 2; j++) {
+                    double[] xArray = matrixX.getColumn(i);
+                    double[] yArray = matrixX.getColumn(j);
+                    
+                    corr[i][j] = corel.covariance(xArray, yArray);
+                }
+            }
+            return MatrixUtils.createRealMatrix(corr);
+        }
+        private double[] calcScore(
+            double[][] xi,
+            double[] meanG1, double[] meanG2,
+            RealMatrix invV1, RealMatrix invV2) {
+            double[] ret = new double[xi.length];
+
+            for(int i = 0; i < xi.length; i++) {
+                double d1 = calcD(xi[i], meanG1,  invV1);              
+                double d2 = calcD(xi[i], meanG2,  invV2); 
+
+                ret[i] = Math.sqrt(d2) - Math.sqrt(d1);             
+            }
+            return ret;
+        }
+        private double calcD(double[] x, double[] mean, RealMatrix InvV) {
+            RealMatrix xVec = MatrixUtils.createRealMatrix(
+                new double[][] {
+                    {x[0] - mean[0]},
+                    {x[1] - mean[1]}
+               }
+            );
+            RealMatrix xt = xVec.transpose();
+            // tx*(v-1)*x
+            RealMatrix dMatrix = xt.multiply(InvV.multiply(xVec));
+
+            return new LUDecomposition(dMatrix).getDeterminant();
         }
     }
 }
