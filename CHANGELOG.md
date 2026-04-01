@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## [0.0.5] - 2026-03-31
+### add
+- add score2 function in DiscAnalib
+
+### fix
+- del line_disc function in DiscAnalib
+- chg score function in DiscAnalib
+
 ## [0.0.4] - 2026-02-10
 ### add
 - add DiscAnalib
