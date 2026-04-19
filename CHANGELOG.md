@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## [0.0.6] - 2026-04-18
+### add
+- add validity function in DiscAnalib
+
 ## [0.0.5] - 2026-03-31
 ### add
 - add score2 function in DiscAnalib
