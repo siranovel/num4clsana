@@ -19,6 +19,11 @@ public class DiscAna {
 
         return da1.score(xa, xb);
     }
+    public Map<String, Double> validity(Map<String, double[]> sc, double[][] xa, double[][] xb) {
+        Validity va = new Validity();
+
+        return va.validity(sc, xa, xb);
+    }
     /*********************************/
     /* interface define              */
     /*********************************/
@@ -215,5 +220,72 @@ public class DiscAna {
             return new LUDecomposition(dMatrix).getDeterminant();
         }
     }
+    // 
+    private class Validity {
+        private int act_0 = 0;         // 実測値 0
+        private int act_1 = 0;         // 実測値 1
+        private int predict_0 = 0;
+        private int predict_1 = 0;
+        private double tp = 0.0;       // 実測値=0 予測値 = 1
+        private double fn = 0.0;       // 実測値=0 予測値 = 0
+        private double fp = 0.0;       // 実測値=1 予測値 = 1
+        private double tn = 0.0;       // 実測値=1 予測値 = 0
+        public Map<String, Double> validity(Map<String, double[]> sc, double[][] xa, double[][] xb) {
+            resClass(sc, xa, xb);      // 分類結果
+            return preciIndex();       // 分類問題の精度指標
+        }
+        // 分類結果
+        private void resClass(Map<String, double[]> sc, double[][] xa, double[][] xb) {
+            act_0 = xa.length;
+            act_1 = xb.length;
+            // 実測値=0
+            calcPredict(sc.get("G1"));
+            tp = (double)predict_0 / (double)act_0;
+            fn = (double)predict_1 / (double)act_0;
+            // 実測値=1
+            calcPredict(sc.get("G2"));
+            fp = (double)predict_0 / (double)act_1;
+            tn = (double)predict_1 / (double)act_1;
+        }
+        // 予測値
+        private void calcPredict(double[] gn) {
+            predict_0 = 0;
+            predict_1 = 0;
+
+            for(double v : gn) {
+                if (v > 0)  { predict_0++;}
+                if (v < 0)  { predict_1++;}
+            }
+        }
+        // 分類問題の精度指標
+        private Map<String, Double> preciIndex() {
+            Map<String, Double> retMap = new HashMap<String, Double>();
+
+            // 精度・正確度
+            retMap.put("accuracy", (tp+tn)/(tp+fp+tn+fn));
+            // 適合度
+            retMap.put("precision", tp/(tp+fp));
+            // 再現度
+            retMap.put("recall", tp/(tp+fn));
+            // 感度=再現率
+            retMap.put("sensitivity", tp/(tp+fn));
+            // 特異度
+            retMap.put("specificity", tn/(fp+tn));
+            // 陽性敵中率=適合度
+            retMap.put("ppv", tp/(tp+fp));
+            // 陰性的中率
+            retMap.put("npv", tn/(tn+fn));
+            // 真陽性率=再現率・感度
+            retMap.put("tpr", tp/(tp+fn));
+            // 偽陽性率
+            retMap.put("fpr", fp/(fp+tn));
+            // 真陰性率
+            retMap.put("tnr", tn/(fp+tn));
+            // 偽陰性率
+            retMap.put("fnr", fn/(tp+fn));
+            return retMap;
+        }
+    }
+
 }
 
