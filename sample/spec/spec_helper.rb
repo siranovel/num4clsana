@@ -9,5 +9,6 @@ RSpec.configure do |config|
   config.include MyScoreMatcher
   config.include MyIsArrMatcher
   config.include MyContri2Matcher
+  config.include MyIsHashMatcher
 end
 
