@@ -6,6 +6,7 @@ java_import 'PCA'
 java_import 'Eigen'
 java_import 'SchFactAna'
 java_import 'DiscAna'
+java_import 'java.util.HashMap'
 
 # 分類分析
 #  (Apache commoms math3使用)
@@ -271,10 +272,10 @@ module Num4ClsAnaLib
         #       }
         def score(xa, xb)
             retJava = @disc.score(xa.to_java(Java::double[]),xb.to_java(Java::double[]))
-            retRb = {
-                "G1": retJava.get("G1").to_a,
-                "G2": retJava.get("G2").to_a,
-            }
+            retRb = {}
+            retJava.each do |k, v|
+                retRb[k.to_sym] = v.to_a
+            end
             return retRb 
         end
         # 判別得点(マハラノビスの距離による)
@@ -306,11 +307,65 @@ module Num4ClsAnaLib
         #       }
         def score2(xa, xb)
             retJava = @disc.score2(xa.to_java(Java::double[]),xb.to_java(Java::double[]))
-            retRb = {
-                "G1": retJava.get("G1").to_a,
-                "G2": retJava.get("G2").to_a,
-            }
+
+            retRb = {}
+            retJava.each do |k, v|
+                retRb[k.to_sym] = v.to_a
+            end
             return retRb 
+        end
+        # 正答率と誤判別率
+        #
+        # @overload validity(sc, xa, xb)
+        #   @param [Hash]  sc 判別スコア(G1: グループ1(double[])
+        #               　              G2: グループ2(double[]))
+        #   @param [Array] xa グループ1(double[][])
+        #   @param [Array] xb グループ2(double[][])
+        #   @return [Hash] 分類問題の精度指標
+        # @example
+        #     sc = {
+        #       "G1": [1.034, 1.337, 0.006, 3.095, 2.458, 2.716, 1.370],
+        #       "G2": [-1.579,-0.872,-0.530,-1.997,-2.033,-2.176,0.510,-3.339]
+        #     }
+        #     xa = [
+        #         [3.4, 2.9], [3.9, 2.4],
+        #         [2.2, 3.8], [3.5, 4.8],
+        #         [4.1, 3.2], [3.7, 4.1],
+        #         [2.8, 4.2]
+        #     ]
+        #     xb = [
+        #         [1.4, 3.5], [2.4, 2.6],
+        #         [2.8, 2.3], [1.7, 2.6],
+        #         [2.3, 1.6], [1.9, 2.1],
+        #         [2.7, 3.5], [1.3, 1.9]
+        #     ]
+        #     cls = Num4ClsAnaLib::DiscAnalib.new
+        #     cls.validity(sc, xa, xb)
+        #     =>
+        #       {
+        #         "accuracy": 0.9375,              # 精度・正確度
+        #         "precision": 0.8888888888888888, # 適合度
+        #         "recall": 1.0,                   # 再現率
+        #         "sensitivity": 1.0,              # 感度
+        #         "specificity": 0.875,            # 特異度
+        #         "ppv": 0.8888888888888888,       # 陽性適敵中率
+        #         "npv": 1.0,                      # 陽性適中率
+        #         "tpr": 1.0,                      # 真陽性率
+        #         "fpr": 0.125,                    # 偽陽性率
+        #         "tnr": 0.875,                    # 真陰性率
+        #         "fnr": 0.0                       # 偽陰性率
+        #      }
+        def validity(sc, xa, xb)
+            o = HashMap.new
+            sc.each do |k, v|
+                o[k.to_s] = v.to_java(Java::double)
+            end
+            retJava = @disc.validity(o, xa.to_java(Java::double[]),xb.to_java(Java::double[]))
+            retRb = {}
+            retJava.each do |k, v|
+                retRb[k.to_sym] = v
+            end
+            return retRb
         end
     end
 end
