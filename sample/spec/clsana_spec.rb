@@ -165,6 +165,28 @@ RSpec.describe Num4ClsAnaLib do
                 cls.score2(@xa, @xb)
             ).to is_score2(res,3)
         end
+        it '#validity' do
+            sc = {
+              "G1": [1.034, 1.337, 0.006, 3.095, 2.458, 2.716, 1.370],
+              "G2": [-1.579,-0.872,-0.530,-1.997,-2.033,-2.176,0.510,-3.339]
+            }
+            res = {
+                "accuracy": 0.938,     # 精度・正確度
+                "precision": 0.889,    # 適合度
+                "recall": 1.000,       # 再現率
+                "sensitivity": 1.000,  # 感度
+                "specificity": 0.875,  # 特異度
+                "ppv": 0.889,          # 陽性適敵中率
+                "npv": 1.000,          # 陽性適中率
+                "tpr": 1.000,          # 真陽性率
+                "fpr": 0.125,          # 偽陽性率
+                "tnr": 0.875,          # 真陰性率
+                "fnr": 0.000           # 偽陰性率
+            }
+            expect(
+                cls.validity(sc, @xa, @xb)
+            ).to is_hash(res, 3)
+        end
     end
 end
 
